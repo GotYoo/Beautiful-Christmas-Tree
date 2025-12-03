@@ -16,8 +16,25 @@ interface ExperienceProps {
 }
 
 // STATIC CONSTANTS FOR STABILITY
-const BALL_COLORS = ['#8B0000', '#D4AF37', '#191970', '#C0C0C0']; 
-const BOX_COLORS = ['#800000', '#228B22', '#D4AF37'];
+// Increased Red and Green variations, reduced Yellow/Gold frequency
+const BALL_COLORS = [
+    '#8B0000', // Dark Red
+    '#D32F2F', // Bright Red
+    '#1B5E20', // Dark Green
+    '#2E7D32', // Forest Green
+    '#D4AF37', // Gold (kept but diluted)
+    '#C0C0C0', // Silver
+    '#191970'  // Midnight Blue
+]; 
+
+const BOX_COLORS = [
+    '#800000', // Maroon
+    '#C62828', // Red
+    '#1B5E20', // Dark Green
+    '#43A047', // Green
+    '#D4AF37'  // Gold
+];
+
 const STAR_COLORS = ['#D4AF37', '#E5E4E2'];
 const CRYSTAL_COLORS = ['#F0F8FF', '#E0FFFF']; 
 const CANDY_COLORS = ['#FF0000', '#FFFFFF'];

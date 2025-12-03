@@ -78,6 +78,12 @@ const Snow: React.FC<{ mixFactor: number }> = ({ mixFactor }) => {
     return { positions: pos, scales: sc, velocities: vel };
   }, []);
 
+  // Fix: Memoize uniforms to ensure stable reference across renders
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMix: { value: 1 }
+  }), []);
+
   useFrame((state, delta) => {
      if (materialRef.current && pointsRef.current) {
          // Smooth mix factor
@@ -108,10 +114,7 @@ const Snow: React.FC<{ mixFactor: number }> = ({ mixFactor }) => {
         ref={materialRef}
         vertexShader={snowVertexShader}
         fragmentShader={snowFragmentShader}
-        uniforms={{
-            uTime: { value: 0 },
-            uMix: { value: 1 }
-        }}
+        uniforms={uniforms}
         transparent
         depthWrite={false}
       />

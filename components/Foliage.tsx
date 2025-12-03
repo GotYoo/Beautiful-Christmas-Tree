@@ -86,6 +86,15 @@ const Foliage: React.FC<FoliageProps> = ({ mixFactor, colors }) => {
   
   const { target, chaos, randoms } = useMemo(() => generateFoliageData(count, 18, 7.5), []);
 
+  // Fix: Memoize uniforms so they are stable across renders
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMix: { value: 1 },
+    uSize: { value: 4.0 }, 
+    uColorBottom: { value: new THREE.Color(colors.bottom) },
+    uColorTop: { value: new THREE.Color(colors.top) }
+  }), []); // Empty dependency array, values are updated in useFrame
+
   useFrame((state, delta) => {
     if (materialRef.current) {
       const speed = 2.0 * delta; 
@@ -93,6 +102,8 @@ const Foliage: React.FC<FoliageProps> = ({ mixFactor, colors }) => {
 
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
       materialRef.current.uniforms.uMix.value = currentMixRef.current;
+      
+      // Update color uniforms manually to handle prop changes since uniforms object is memoized
       materialRef.current.uniforms.uColorBottom.value.set(colors.bottom);
       materialRef.current.uniforms.uColorTop.value.set(colors.top);
     }
@@ -130,13 +141,7 @@ const Foliage: React.FC<FoliageProps> = ({ mixFactor, colors }) => {
         ref={materialRef}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
-        uniforms={{
-          uTime: { value: 0 },
-          uMix: { value: 1 },
-          uSize: { value: 4.0 }, 
-          uColorBottom: { value: new THREE.Color(colors.bottom) },
-          uColorTop: { value: new THREE.Color(colors.top) }
-        }}
+        uniforms={uniforms}
         transparent
         depthWrite={false}
       />
