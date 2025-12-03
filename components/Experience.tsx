@@ -16,12 +16,10 @@ interface ExperienceProps {
 }
 
 // STATIC CONSTANTS FOR STABILITY
-// Defining these outside the component prevents them from being re-created on every render.
-// This ensures that the useMemo in Ornaments.tsx doesn't re-run (which would re-randomize positions).
-const BALL_COLORS = ['#8B0000', '#D4AF37', '#191970', '#C0C0C0']; // Red, Gold, Navy, Silver
+const BALL_COLORS = ['#8B0000', '#D4AF37', '#191970', '#C0C0C0']; 
 const BOX_COLORS = ['#800000', '#228B22', '#D4AF37'];
 const STAR_COLORS = ['#D4AF37', '#E5E4E2'];
-const CRYSTAL_COLORS = ['#F0F8FF', '#E0FFFF']; // AliceBlue, LightCyan
+const CRYSTAL_COLORS = ['#F0F8FF', '#E0FFFF']; 
 const CANDY_COLORS = ['#FF0000', '#FFFFFF'];
 
 // Handles Camera Parallax and Tree Rotation Physics
@@ -35,7 +33,6 @@ const SceneController: React.FC<{ inputRef: React.MutableRefObject<{ x: number, 
     const lastX = useRef(0);
 
     useFrame((state, delta) => {
-        // Safe delta to prevent huge jumps on lag spikes
         const safeDelta = Math.min(delta, 0.1);
 
         // 1. Smooth Input Interpolation
@@ -47,15 +44,16 @@ const SceneController: React.FC<{ inputRef: React.MutableRefObject<{ x: number, 
         currentInput.current.y = THREE.MathUtils.lerp(currentInput.current.y, targetY, inputSmoothing);
 
         // 2. Camera Parallax
-        // Adjusted Z base from 24 to 32 to give the tree more margin
-        const camX = currentInput.current.x * 6; 
-        const camY = currentInput.current.y * 3; 
-        const camZ = 32 + Math.abs(currentInput.current.x) * 4; 
+        // REDUCED RANGE: Reduced X range from 6 to 4 to minimize "dizzy" background movement
+        const camX = currentInput.current.x * 4; 
+        const camY = currentInput.current.y * 2; 
+        const camZ = 32 + Math.abs(currentInput.current.x) * 2; 
         
         camera.position.lerp(vec.set(camX, camY, camZ), 2.0 * safeDelta);
         camera.lookAt(0, 0, 0);
 
         // 3. Tree Momentum Physics
+        // Only applies to the groupRef, which creates the "spinning inertia"
         if (groupRef.current) {
             const deltaX = currentInput.current.x - lastX.current;
             lastX.current = currentInput.current.x;
@@ -84,21 +82,20 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
       <Environment preset="city" background={false} />
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
 
-      {/* Global Snow Effect */}
+      {/* GLOBAL SNOW EFFECT - PLACED OUTSIDE THE ROTATING GROUP */}
+      {/* This ensures snow does not rotate with the tree */}
       <Snow mixFactor={mixFactor} />
 
-      {/* Tree Group centered at 0,0,0 */}
+      {/* ROTATING TREE GROUP */}
       <group ref={groupRef} position={[0, 0, 0]}>
         
-        {/* Dense Foliage with Snow tips */}
+        {/* Dense Foliage */}
         <Foliage mixFactor={mixFactor} colors={colors} />
         
         {/* Spiral Light Strip */}
         <SpiralLights mixFactor={mixFactor} />
         
-        {/* --- ORNAMENTS LAYERS --- */}
-
-        {/* 1. Classic Balls */}
+        {/* Ornaments */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="BALL" 
@@ -106,8 +103,6 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
             scale={0.5}
             colors={BALL_COLORS} 
         />
-
-        {/* 2. Presents (Boxes) */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="BOX" 
@@ -115,8 +110,6 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
             scale={0.6}
             colors={BOX_COLORS} 
         />
-        
-        {/* 3. Luxury Stars */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="STAR" 
@@ -124,8 +117,6 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
             scale={0.5}
             colors={STAR_COLORS} 
         />
-
-        {/* 4. Crystals/Snowflakes */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="CRYSTAL" 
@@ -133,8 +124,6 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
             scale={0.3}
             colors={CRYSTAL_COLORS} 
         />
-
-        {/* 5. Candy Canes */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="CANDY" 
@@ -142,8 +131,6 @@ const SceneContent: React.FC<ExperienceProps> = ({ mixFactor, colors, inputRef }
             scale={0.4}
             colors={CANDY_COLORS} 
         />
-
-        {/* 6. Polaroids */}
         <Ornaments 
             mixFactor={mixFactor} 
             type="PHOTO" 

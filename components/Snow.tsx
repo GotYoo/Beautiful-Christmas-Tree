@@ -1,11 +1,11 @@
 import React, { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { lerp } from '../utils/math';
 
 const snowVertexShader = `
-  uniform float uTime;
-  uniform float uMix; // 1 = Formed (Gentle), 0 = Chaos (Storm)
+  uniform float uTime; // Global Time
+  uniform float uMix;  // Still used for drift amplitude
   
   attribute float aScale;
   attribute vec3 aVelocity;
@@ -16,11 +16,13 @@ const snowVertexShader = `
     vec3 pos = position;
     
     // Physics
-    // Fall down based on time
-    float fallSpeed = aVelocity.y * (1.0 + (1.0 - uMix) * 4.0); // Faster in chaos
+    // Fall down based on Global Time.
+    float fallSpeed = aVelocity.y; 
+    
     pos.y = mod(pos.y - uTime * fallSpeed + 15.0, 30.0) - 15.0; // Wrap Y (-15 to 15)
     
     // Side drift
+    // uMix still controls the Amplitude of the drift (Chaos = wider drift)
     float drift = sin(uTime * aVelocity.x + pos.y) * (0.5 + (1.0 - uMix) * 2.0);
     pos.x += drift;
     pos.z += cos(uTime * aVelocity.z + pos.x) * 0.5;
@@ -51,8 +53,10 @@ const snowFragmentShader = `
 
 const Snow: React.FC<{ mixFactor: number }> = ({ mixFactor }) => {
   const count = 3000;
+  const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const currentMixRef = useRef(1);
+  const { camera } = useThree();
 
   const { positions, scales, velocities } = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -60,10 +64,10 @@ const Snow: React.FC<{ mixFactor: number }> = ({ mixFactor }) => {
     const vel = new Float32Array(count * 3);
     
     for(let i=0; i<count; i++) {
-        // Random box -20 to 20
-        pos[i*3] = (Math.random() - 0.5) * 40;
+        // Random box -25 to 25 (Slightly larger to cover screen edges)
+        pos[i*3] = (Math.random() - 0.5) * 50;
         pos[i*3+1] = (Math.random() - 0.5) * 30; // Y height
-        pos[i*3+2] = (Math.random() - 0.5) * 40;
+        pos[i*3+2] = (Math.random() - 0.5) * 40; // Z depth
         
         sc[i] = Math.random() * 2 + 1;
         
@@ -75,15 +79,26 @@ const Snow: React.FC<{ mixFactor: number }> = ({ mixFactor }) => {
   }, []);
 
   useFrame((state, delta) => {
-     if (materialRef.current) {
+     if (materialRef.current && pointsRef.current) {
+         // Smooth mix factor
          currentMixRef.current = lerp(currentMixRef.current, mixFactor, delta * 2.0);
+         
+         // 1. Uniform Updates
          materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
          materialRef.current.uniforms.uMix.value = currentMixRef.current;
+
+         // 2. Camera Locking (Infinite Snow Effect)
+         // We lock the X/Y position of the snow volume to the camera.
+         // This removes parallax "swimming" relative to the background, 
+         // making it feel like an atmospheric layer attached to the viewer.
+         pointsRef.current.position.x = camera.position.x;
+         pointsRef.current.position.y = camera.position.y;
+         // We do NOT lock Z, to preserve depth perception as we zoom/move.
      }
   });
 
   return (
-    <points>
+    <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
         <bufferAttribute attach="attributes-aScale" count={count} array={scales} itemSize={1} />
