@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自定义字体样式 */
+body { margin: 0; background-color: #010a05; overflow: hidden; }
+.font-luxury { font-family: 'Cinzel', serif; }
+.font-body { font-family: 'Playfair Display', serif; }
+.font-script { font-family: 'Monsieur La Doulaise', cursive; }
