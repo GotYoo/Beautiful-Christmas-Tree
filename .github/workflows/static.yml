@@ -2,7 +2,7 @@ name: Deploy Vite App
 
 on:
   push:
-    branches: ["main"] # 注意：有些老项目主分支叫 master，你看一下你仓库左上角显示的是 main 还是 master，这里要对应
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -15,32 +15,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-      build:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v4
-          - name: Setup Node
-            uses: actions/setup-node@v4
-            with:
-              node-version: 20
-              # 注意：这里删除了 cache: 'npm'
-          - name: Install dependencies
-            run: npm install  # 注意：这里从 npm ci 改成了 npm install
-          - name: Build project
-            run: npm run build
-          - name: Upload artifact
-            uses: actions/upload-pages-artifact@v3
-            with:
-              path: './dist'
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      deploy:
-        environment:
-          name: github-pages
-          url: ${{ steps.deployment.outputs.page_url }}
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-          - name: Deploy to GitHub Pages
-            id: deployment
-            uses: actions/deploy-pages@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # ⚠️ 注意：我删除了 cache: 'npm' 这一行，这非常关键！
+          # 没有 lock 文件时，绝对不能留这一行。
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
