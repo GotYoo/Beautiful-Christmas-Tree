@@ -14,7 +14,20 @@ const App: React.FC = () => {
   const inputRef = useRef({ x: 0, y: 0, isDetected: false });
   
   // Image Upload State
-  const [userImages, setUserImages] = useState<string[]>([]);
+  const [userImages, setUserImages] = useState<string[]>([
+    'photos/1.jpg',
+    'photos/2.jpg',
+    'photos/3.png',
+    'photos/4.jpg',
+    'photos/5.jpg',
+    'photos/6.jpg',
+    'photos/7.jpg',
+    'photos/8.jpg',
+    'photos/9.jpg',
+    'photos/10.jpg',
+    'photos/11.jpg',
+    'photos/12.jpg',
+  ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
