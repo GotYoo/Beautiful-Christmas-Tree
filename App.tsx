@@ -150,7 +150,7 @@ const App: React.FC = () => {
       {/* 🎵 在这里添加背景音乐播放器 🎵 */}
       {/* 注意：src 里的路径要和你上传的文件名一模一样 */}
       <audio 
-        src="/audio/M500004Sktnw0KnoIF.mp3" 
+        src="audio/M500004Sktnw0KnoIF.mp3" 
         autoPlay 
         loop 
         style={{ display: 'none' }} // 隐藏播放器图标，只闻其声不见其人
