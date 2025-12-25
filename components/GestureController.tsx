@@ -41,7 +41,7 @@ const GestureController: React.FC<GestureControllerProps> = ({ onGesture, isGuiV
         
         if (isMounted) setLoadingMessage("Loading Local AI Model...");
         
-        const LOCAL_MODEL_URL = 'public/models/handpose/model.json';
+        const LOCAL_MODEL_URL = 'models/handpose/model.json';
 
         // Fix: Cast configuration to any to bypass type check for modelUrl support
         const net = await handpose.load({
